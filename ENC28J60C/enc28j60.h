@@ -31,7 +31,7 @@
   Bits:
   
   |         Bit7|    Bit6|    Bit5|   Bit4|   Bit3|   Bit2|   Bit1|   Bit0|
-  |Eth_Reg_Group|BankBit1|BankBit0|RegBit4|RegBit3|RegBit2|RegBit1|RegBit0|
+  |M_REG_GROUP|BankBit1|BankBit0|RegBit4|RegBit3|RegBit2|RegBit1|RegBit0|
   
   */
   
@@ -41,9 +41,9 @@
   #define BANK1 0x20
   #define BANK2 0x40
   #define BANK3 0x60
-  #define BANK_MASK 0x80
+  #define BANK_MASK 0x60
 
-  #define ETH_REG_GROUP 0x80
+  #define M_REG_GROUP 0x80
   
   /*Common registers*/
   #define EIE         0x1B
@@ -111,40 +111,40 @@
  /*
   ************BANK 2************
   */
-  #define MACON1           (0x00|BANK2|ETH_REG_GROUP)
-  #define MACON2           (0x01|BANK2|ETH_REG_GROUP)
-  #define MACON3           (0x02|BANK2|ETH_REG_GROUP)
-  #define MACON4           (0x03|BANK2|ETH_REG_GROUP)
-  #define MABBIPG          (0x04|BANK2|ETH_REG_GROUP)
-  #define MAIPGL           (0x06|BANK2|ETH_REG_GROUP)
-  #define MAIPGH           (0x07|BANK2|ETH_REG_GROUP)
-  #define MACLCON1         (0x08|BANK2|ETH_REG_GROUP)
-  #define MACLCON2         (0x09|BANK2|ETH_REG_GROUP)
-  #define MAMXFLL          (0x0A|BANK2|ETH_REG_GROUP)
-  #define MAMXFLH          (0x0B|BANK2|ETH_REG_GROUP)
-  #define MAPHSUP          (0x0D|BANK2|ETH_REG_GROUP)
-  #define MICON            (0x11|BANK2|ETH_REG_GROUP)
-  #define MICMD            (0x12|BANK2|ETH_REG_GROUP)
-  #define MIREGADR         (0x14|BANK2|ETH_REG_GROUP)
-  #define MIWRL            (0x16|BANK2|ETH_REG_GROUP)
-  #define MIWRH            (0x17|BANK2|ETH_REG_GROUP)
-  #define MIRDL            (0x18|BANK2|ETH_REG_GROUP)
-  #define MIRDH            (0x19|BANK2|ETH_REG_GROUP)
+  #define MACON1           (0x00|BANK2|M_REG_GROUP)
+  #define MACON2           (0x01|BANK2|M_REG_GROUP)
+  #define MACON3           (0x02|BANK2|M_REG_GROUP)
+  #define MACON4           (0x03|BANK2|M_REG_GROUP)
+  #define MABBIPG          (0x04|BANK2|M_REG_GROUP)
+  #define MAIPGL           (0x06|BANK2|M_REG_GROUP)
+  #define MAIPGH           (0x07|BANK2|M_REG_GROUP)
+  #define MACLCON1         (0x08|BANK2|M_REG_GROUP)
+  #define MACLCON2         (0x09|BANK2|M_REG_GROUP)
+  #define MAMXFLL          (0x0A|BANK2|M_REG_GROUP)
+  #define MAMXFLH          (0x0B|BANK2|M_REG_GROUP)
+  #define MAPHSUP          (0x0D|BANK2|M_REG_GROUP)
+  #define MICON            (0x11|BANK2|M_REG_GROUP)
+  #define MICMD            (0x12|BANK2|M_REG_GROUP)
+  #define MIREGADR         (0x14|BANK2|M_REG_GROUP)
+  #define MIWRL            (0x16|BANK2|M_REG_GROUP)
+  #define MIWRH            (0x17|BANK2|M_REG_GROUP)
+  #define MIRDL            (0x18|BANK2|M_REG_GROUP)
+  #define MIRDH            (0x19|BANK2|M_REG_GROUP)
   
  /*
   ************BANK 3************
   */  
-  #define MAADR1           (0x00|BANK3|ETH_REG_GROUP)
-  #define MAADR0           (0x01|BANK3|ETH_REG_GROUP)
-  #define MAADR3           (0x02|BANK3|ETH_REG_GROUP)
-  #define MAADR2           (0x03|BANK3|ETH_REG_GROUP)
-  #define MAADR5           (0x04|BANK3|ETH_REG_GROUP)
-  #define MAADR4           (0x05|BANK3|ETH_REG_GROUP)
+  #define MAADR1           (0x00|BANK3|M_REG_GROUP)
+  #define MAADR0           (0x01|BANK3|M_REG_GROUP)
+  #define MAADR3           (0x02|BANK3|M_REG_GROUP)
+  #define MAADR2           (0x03|BANK3|M_REG_GROUP)
+  #define MAADR5           (0x04|BANK3|M_REG_GROUP)
+  #define MAADR4           (0x05|BANK3|M_REG_GROUP)
   #define EBSTSD           (0x06|BANK3)
   #define EBSTCON          (0x07|BANK3)
   #define EBSTCSL          (0x08|BANK3)
   #define EBSTCSH          (0x09|BANK3)
-  #define MISTAT           (0x0A|BANK3|ETH_REG_GROUP)
+  #define MISTAT           (0x0A|BANK3|M_REG_GROUP)
   #define EREVID           (0x12|BANK3)
   #define ECOCON           (0x15|BANK3)
   #define EFLOCON          (0x17|BANK3)
@@ -307,7 +307,7 @@
   which contains:
     Destation Address (MAC) 6 Bytes,
     Source Address (MAC) 6 Bytes,
-    Type/Length of frame 2 Bytes,
+    Type/Length of frame 2 Bytes, Field<1500 -> Length of Data
     Data: 46-1500 Bytes,
     CRC (Cyclic redundacy check) 4 Bytes
   */
