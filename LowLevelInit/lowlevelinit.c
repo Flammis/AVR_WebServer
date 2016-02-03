@@ -1,6 +1,6 @@
-#include <lowlevelinit.h>
 #include <avr/io.h>
-
+#include <util/delay.h>
+#include <lowlevelinit.h>
 
 /******************************************************************************/
 extern void ExternIntInit (void)
@@ -37,7 +37,7 @@ extern void Timer1Init (void)
   Timer1 Output Compare A Match Interrupt Enable
   //TIMSK = TIMSK | 0x10;            // enable intr on OCR1A
   */
-  TIMSK1 = TIMSK1 | 0x02;
+  //TIMSK1 = TIMSK1 | 0x02;
 
   /*
   Bit:     |  Bit7|   Bit6|  Bit5|   Bit4|   Bit3|  Bit2|  Bit1| Bit0|

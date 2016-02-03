@@ -335,7 +335,7 @@
   extern void Enc28j60clkout(uint8_t clk);
   extern void InitPhy (void);
   extern void Enc28j60Init(uint8_t* macaddr);
-  extern void Enc28j60PacketSend(uint16_t len, uint8_t* packet);
+  extern uint8_t Enc28j60PacketSend(uint16_t len, uint8_t* packet);
   extern uint16_t Enc28j60PacketReceive(uint16_t maxlen, uint8_t* packet);
   extern uint8_t Enc28j60getrev(void);
   

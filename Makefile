@@ -5,7 +5,7 @@
 ##########------------------------------------------------------##########
 
 MCU   = atmega328
-F_CPU = 16000000UL  
+F_CPU = 16000000UL
 BAUD  = 9600UL
 ## Also try BAUD = 19200 or 38400 if you're feeling lucky.
 
@@ -16,6 +16,7 @@ LIBDIR = C:/Users/GustavWi/Documents/AVR/avr8-gnu-toolchain/avr
 LCDDIR = C:/Users/GustavWi/Documents/AVR/ProgrammeringAvEnkapselDatorer/LCD
 ENC28JDIR = ./ENC28J60C
 LowLvlInit = ./LowLevelInit
+TCP_IP = ./tcp_ip_stack
 
 ##########------------------------------------------------------##########
 ##########                 Programmer Defaults                  ##########
@@ -55,12 +56,12 @@ TARGET = $(lastword $(subst /, ,$(CURDIR)))
 # Object files: will find all .c/.h files in current directory
 #  and in LIBDIR.  If you have any other (sub-)directories with code,
 #  you can add them in to SOURCES below in the wildcard statement.
-SOURCES=$(wildcard *.c $(LIBDIR)/*.c $(LCDDIR)/*.c $(ENC28JDIR)/*.c $(LowLvlInit)/*.c)
+SOURCES=$(wildcard *.c $(LIBDIR)/*.c $(LCDDIR)/*.c $(ENC28JDIR)/*.c $(LowLvlInit)/*.c $(TCP_IP)/*.c)
 OBJECTS=$(SOURCES:.c=.o)
 HEADERS=$(SOURCES:.c=.h)
 
 ## Compilation options, type man avr-gcc if you're curious.
-CPPFLAGS = -DF_CPU=$(F_CPU) -DBAUD=$(BAUD) -I. -I$(LIBDIR) -I$(LCDDIR) -I$(ENC28JDIR) -I$(LowLvlInit)
+CPPFLAGS = -DF_CPU=$(F_CPU) -DBAUD=$(BAUD) -I. -I$(LIBDIR) -I$(LCDDIR) -I$(ENC28JDIR) -I$(LowLvlInit) -I$(TCP_IP)
 CFLAGS = -Os -g -std=gnu99 -Wall
 ## Use short (8-bit) data types 
 CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums 
@@ -128,72 +129,36 @@ squeaky_clean:
 ##########              Programmer-specific details             ##########
 ##########           Flashing code to AVR using avrdude         ##########
 ##########------------------------------------------------------##########
+# External Clock:
+# Full Swing Crystal Oscillator 16 Mhz
+# Maximum startup time.
+# |CKSEL3|CKSEL2|CKSEL1|CKSEL0|: 0111
+# |SUT1|SUT0|: 11
 
-# flash: $(TARGET).hex 
-	# $(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U flash:w:$<
+show_fuses:
+	$(AVRDUDE) -B 5 -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -nv
 
-# ## An alias
-# program: flash
+flash: $(TARGET).hex 
+	$(AVRDUDE) -B 5 -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U flash:w:$<
 
-# flash_eeprom: $(TARGET).eeprom
-	# $(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U eeprom:w:$<
+## Mega 328 default values
+LFUSE = 0x62
+FUSE_STRING_DEFAULT = -U lfuse:w:$(LFUSE):m
 
-# avrdude_terminal:
-	# $(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -nt
+LFUSE = 0x62
+FUSE_STRING_DEFAULT = -U lfuse:w:$(LFUSE):m
+SetDefaultFuse: 
+	$(AVRDUDE) -B 5 -c $(PROGRAMMER_TYPE) -p $(MCU) \
+	           $(PROGRAMMER_ARGS) $(FUSE_STRING_DEFAULT)
 
-# ## If you've got multiple programmers that you use, 
-# ## you can define them here so that it's easy to switch.
-# ## To invoke, use something like `make flash_arduinoISP`
-# flash_usbtiny: PROGRAMMER_TYPE = usbtiny
-# flash_usbtiny: PROGRAMMER_ARGS =  # USBTiny works with no further arguments
-# flash_usbtiny: flash
+#SetDefaultFuse: $(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) $(FUSE_STRING_DEFAULT)
 
-# flash_usbasp: PROGRAMMER_TYPE = usbasp
-# flash_usbasp: PROGRAMMER_ARGS =  # USBasp works with no further arguments
-# flash_usbasp: flash
 
-# flash_arduinoISP: PROGRAMMER_TYPE = avrisp
-# flash_arduinoISP: PROGRAMMER_ARGS = -b 19200 -P /dev/ttyACM0 
-# ## (for windows) flash_arduinoISP: PROGRAMMER_ARGS = -b 19200 -P com5
-# flash_arduinoISP: flash
+LFUSE_EXT = 0xf7
+FUSE_STRING_EXT = -U lfuse:w:$(LFUSE_EXT):m
 
-# flash_109: PROGRAMMER_TYPE = avr109
-# flash_109: PROGRAMMER_ARGS = -b 9600 -P /dev/ttyUSB0
-# flash_109: flash
+setfuseextclock: 
+	$(AVRDUDE) -B 5 -c $(PROGRAMMER_TYPE) -p $(MCU) \
+	           $(PROGRAMMER_ARGS) $(FUSE_STRING_EXT)
 
-# ##########------------------------------------------------------##########
-# ##########       Fuse settings and suitable defaults            ##########
-# ##########------------------------------------------------------##########
-
-# ## Mega 48, 88, 168, 328 default values
-# LFUSE = 0x62
-# HFUSE = 0xdf
-# EFUSE = 0x00
-
-# ## Generic 
-# FUSE_STRING = -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m -U efuse:w:$(EFUSE):m 
-
-# fuses: 
-	# $(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) \
-	           # $(PROGRAMMER_ARGS) $(FUSE_STRING)
-# show_fuses:
-	# $(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -nv	
-
-# ## Called with no extra definitions, sets to defaults
-# set_default_fuses:  FUSE_STRING = -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m -U efuse:w:$(EFUSE):m 
-# set_default_fuses:  fuses
-
-# ## Set the fuse byte for full-speed mode
-# ## Note: can also be set in firmware for modern chips
-# set_fast_fuse: LFUSE = 0xE2
-# set_fast_fuse: FUSE_STRING = -U lfuse:w:$(LFUSE):m 
-# set_fast_fuse: fuses
-
-# ## Set the EESAVE fuse byte to preserve EEPROM across flashes
-# set_eeprom_save_fuse: HFUSE = 0xD7
-# set_eeprom_save_fuse: FUSE_STRING = -U hfuse:w:$(HFUSE):m
-# set_eeprom_save_fuse: fuses
-
-# ## Clear the EESAVE fuse byte
-# clear_eeprom_save_fuse: FUSE_STRING = -U hfuse:w:$(HFUSE):m
-# clear_eeprom_save_fuse: fuses
+#setfuseextclock: $(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(FUSE_STRING_EXT)

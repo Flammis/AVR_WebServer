@@ -1,5 +1,6 @@
 
 #include <avr/io.h>
+#include <util/delay.h>
 #include <enc28j60.h>
 #include <lowlevelinit.h>
 
@@ -256,7 +257,23 @@ void InitPhy (void)
   //Turn LEDA, LEDB off
 	Enc28j60PhyWrite(PHLCON,0x990);
 	_delay_ms(500);
+  
+  //Turn LEDA on
+	Enc28j60PhyWrite(PHLCON,0x890);
+	_delay_ms(500);
+
+  //Turn LEDA, LEDB on
+	Enc28j60PhyWrite(PHLCON,0x880);
+	_delay_ms(500);
+
+  //Turn LEDB on
+	Enc28j60PhyWrite(PHLCON,0x980);
+	_delay_ms(500);
 	
+  //Turn LEDA, LEDB off
+	Enc28j60PhyWrite(PHLCON,0x990);
+	_delay_ms(500);
+  
   //LEDA=links status
   //LEDB=transmit/receive activity
   //Stretch 73 ms
@@ -415,7 +432,7 @@ void Enc28j60Init(uint8_t* macaddr)
 /*******************************************************************
 Transmitt Packet
 ********************************************************************/
-void Enc28j60PacketSend(uint16_t len, uint8_t* packet)
+uint8_t Enc28j60PacketSend(uint16_t len, uint8_t* packet)
 {
   // Set the write pointer to start of transmit buffer area
   Enc28j60Write(EWRPTL, TXSTART_INIT & 0xFF);
@@ -433,11 +450,12 @@ void Enc28j60PacketSend(uint16_t len, uint8_t* packet)
   Enc28j60WriteBuffer(len, packet);
   // send the contents of the transmit buffer onto the network
   Enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
-   // Reset the transmit logic problem. See Rev. B4 Silicon Errata point 12.
+  // Reset the transmit logic problem. See Rev. B4 Silicon Errata point 12.
   if((Enc28j60Read(EIR) & EIR_TXERIF))
   {
     Enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
-  }  
+  }
+  return 1;
 }
 
 /*******************************************************************
