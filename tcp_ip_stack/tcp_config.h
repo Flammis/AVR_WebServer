@@ -9,10 +9,12 @@
 #ifndef _TCP_CONFIG_H
 #define _TCP_CONFIG_H
 
-#include "net.h"
-#include "net_config.h"
+#include <net.h>
+#include <webb_config.h>
 
-#define TCP_MAX_SOCKETS		2
+#define TCP_MAX_SOCKETS		1
+#define TCB_RX_BUFFERSIZE 255
+#define TCB_TX_BUFFERSIZE 500
 
 #define TCP_MSS			(ETHERNET_MAX_PACKET_SIZE - NET_HEADER_SIZE_ETHERNET - NET_HEADER_SIZE_IP - NET_HEADER_SIZE_TCP)	
 

@@ -1,5 +1,9 @@
 
 #include <ethernet.h>
+#include <enc28j60.h>
+#include <ip.h>
+#include <arp.h>
+#include <string.h>
 
 struct ethernet_header
 {
@@ -24,13 +28,18 @@ uint8_t ethernet_rx_buffer[ETHERNET_MAX_PACKET_SIZE + NET_HEADER_SIZE_ETHERNET];
 void ethernet_init(const ethernet_address * mac)
 {
 	memset(&ethernet_stats,0,sizeof(ethernet_stats));
-	memset(ethernet_mac,1,sizeof(ethernet_mac));
+	memset(&ethernet_mac,1,sizeof(ethernet_address));
 	if(mac) {
     memcpy(&ethernet_mac,mac,sizeof(ethernet_mac));  
   }
 }
 
-uint16_t handle_ethernet_packet()
+const ethernet_address * ethernet_get_mac()
+{
+	return (const ethernet_address*)&ethernet_mac;
+}
+
+uint8_t handle_ethernet_packet()
 {
   uint16_t packet_size = 0;
   

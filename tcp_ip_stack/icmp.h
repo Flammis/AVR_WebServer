@@ -9,7 +9,7 @@
 #ifndef _ICMP_H
 #define _ICMP_H
 
-#include <webbnet_config.h>
+#include <webb_config.h>
 
 #include <ip.h>
 

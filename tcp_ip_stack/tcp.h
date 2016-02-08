@@ -9,8 +9,8 @@
 #ifndef _TCP_H
 #define _TCP_H
 
-#include "tcp_config.h"
-#include "ip.h"
+#include <tcp_config.h>
+#include <ip.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -47,19 +47,11 @@ tcp_socket_t tcp_socket_alloc(tcp_socket_callback callback);
 uint8_t tcp_socket_free(tcp_socket_t socket);
 
 uint8_t tcp_listen(tcp_socket_t socket,uint16_t port);
-uint8_t tcp_connect(tcp_socket_t socket,ip_address * ip,uint16_t port);
-uint8_t tcp_close(tcp_socket_t socket);
-uint8_t tcp_accept(tcp_socket_t socket);
 
-int16_t tcp_read(tcp_socket_t socket,uint8_t * data,uint16_t maxlen);
-int16_t tcp_write(tcp_socket_t socket,const uint8_t * data,uint16_t len);
-int16_t tcp_write_P(tcp_socket_t socket,const prog_uint8_t * data,uint16_t len);
-int16_t tcp_write_string_P(tcp_socket_t socket,const prog_char * string);
+uint8_t * tcp_read(tcp_socket_t socket, uint16_t* len);
+uint16_t tcp_write(tcp_socket_t socket, const uint8_t * data);
+uint16_t tcp_write_p(tcp_socket_t socket, const uint8_t * data_p);
 
-uint16_t tcp_get_remote_port(tcp_socket_t socket);
-const ip_address * tcp_get_remote_ip(tcp_socket_t socket);
-
-void tcp_print_stat(FILE * fh);
 
 #define tcp_get_buffer_size() 	(ip_get_buffer_size() - sizeof(struct tcp_header))
 

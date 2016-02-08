@@ -2,7 +2,8 @@
 #ifndef _ETHERNET_H
 #define _ETHERNET_H
 
-  #include <net2.h>
+  #include <stdint.h>
+  #include <net.h>
 
   typedef uint8_t ethernet_address[6];
 
@@ -14,7 +15,10 @@
   extern uint8_t ethernet_tx_buffer[];
   
   void ethernet_init(const ethernet_address * mac);
-  uint16_t handle_ethernet_packet(uint16_t maxlen, uint8_t* buffer);
+  
+  
+  const ethernet_address * ethernet_get_mac(void);
+  uint8_t handle_ethernet_packet(void);
   uint8_t ethernet_send_packet(ethernet_address * dst,uint16_t type,uint16_t len);
 
   #define ethernet_get_buffer()	(&ethernet_tx_buffer[NET_HEADER_SIZE_ETHERNET])

@@ -1,5 +1,13 @@
-
+#include <string.h>
+#include <ethernet.h>
 #include <ip.h>
+#include <net.h>
+#include <ip.h>
+#include <arp.h>
+#include <net.h>
+#include <icmp.h>
+#include <tcp.h>
+
 
 /**
  * Internet Protocol version 4
@@ -115,6 +123,37 @@ static ip_address ip_gateway = NET_IP_GATEWAY;
  */
 static ip_address ip_broadcast;
 
+/**
+ * Checks if specified ip address is the broadcast address
+ * @param [in] ip IP Address
+ * @return 1 if specified address is broadcast, otherwise 0
+ */
+uint8_t ip_is_broadcast(const ip_address * ip);
+
+/**
+ * Checks if specified ip address belongs to the same subnet
+ * @param [in] ip_remote IP Address
+ * @return 1 if specified address belongs to the same subnet, otherwise 0
+ */
+uint8_t ip_in_subnet(const ip_address * ip_remote);
+const ip_address * ip_get_addr(void)		{return (const ip_address*)&ip_addr;} 
+const ip_address * ip_get_netmask(void) 	{return (const ip_address*)&ip_netmask;} 
+const ip_address * ip_get_broadcast(void)	{return (const ip_address*)&ip_broadcast;} 
+const ip_address * ip_get_gateway(void)		{return (const ip_address*)&ip_gateway;} 
+
+/**
+ *
+ */
+static void ip_set_broadcast(void);
+
+/**
+ *
+ */
+uint8_t ip_is_broadcast(const ip_address * ip)
+{
+	return (*((uint32_t*)ip) == 0xffffffff || memcmp(ip,ip_broadcast,4) == 0);
+}
+
 void ip_init(const ip_address * addr,const ip_address * netmask,const ip_address * gateway)
 {
 	if(addr)
@@ -124,6 +163,74 @@ void ip_init(const ip_address * addr,const ip_address * netmask,const ip_address
 	if(gateway)
 		memcpy(&ip_gateway,gateway,sizeof(ip_address));
 }
+
+
+/**
+ *
+ */
+uint8_t ip_send_packet(const ip_address * ip_dst,uint8_t protocol,uint16_t length)
+{
+	ethernet_address mac;
+	
+	/* chech if ip dst address is broadcast */
+	if(ip_is_broadcast(ip_dst))
+	{
+		/* if so then get ip bradcast addr and set mac broadcast*/
+		memset(&mac,0xff,sizeof(ethernet_address));
+	}
+	else
+	{
+		/* otherwise try to get mac form arp table */
+		const ip_address * arp_target;
+		/* check if remote host is in the same subnet */
+		if(ip_in_subnet(ip_dst))
+			/* if so we will request for remote's host mac address */
+			arp_target=ip_dst;
+		else
+			/* otherwise request for gateway's	mac address */
+			arp_target=(const ip_address*)&ip_gateway;
+		if(!arp_get_mac(arp_target,&mac))
+			/* if there is no mac in arp table
+			 the request for this mac is send
+			 but we can't send this packet at this time
+			 so we return 0 which means that packet was not send
+			*/
+      return 0;
+	}
+	struct ip_header * ip = (struct ip_header*)ethernet_get_buffer();
+	
+	/* clear ip header */
+	memset(ip,0,sizeof(struct ip_header));
+	
+	/* set version */
+	ip->vihl.version = (IP_V4)<<4;
+	
+	/* set header length */
+	ip->vihl.header_length |= (sizeof(struct ip_header) / 4) & 0xf;
+	
+	/* set ip packet length */
+	uint16_t total_len = (uint16_t)sizeof(struct ip_header) + length;
+	ip->length = hton16(total_len);
+	
+	/* set time to live */
+	ip->ttl = 64;
+	
+	/* set protocol */
+	ip->protocol = protocol;
+	
+	/* set src addr */
+	memcpy(&ip->src,ip_get_addr(),sizeof(ip_address));
+	
+	/* set dst addr */
+	memcpy(&ip->dst,ip_dst,sizeof(ip_address));
+	
+	/* compute checksum */
+	ip->checksum = hton16(~net_get_checksum(0,(const uint8_t*)ip,sizeof(struct ip_header),10));
+	
+	/* send packet */
+	return ethernet_send_packet(&mac,ETHERNET_TYPE_IP,total_len);
+}
+
 
 uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const ethernet_address * mac )
 {	
@@ -164,7 +271,7 @@ uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const et
 		return 0;
 
 	/* add to arp table if ip does not exist */
-	//arp_table_insert((const ip_address*)&header->src,mac);
+	arp_table_insert((const ip_address*)&header->src,mac);
 	
 	/* redirect packet to the proper upper layer */
 	switch(header->protocol)
@@ -197,4 +304,47 @@ uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const et
 	return 0;
 }
 
+
+/**
+ *
+ */
+uint8_t ip_in_subnet(const ip_address * ip_remote)
+{
+	uint8_t i;
+	for(i=0;i<sizeof(ip_address);i++)
+	{
+		if(
+			(
+				((uint8_t*)ip_remote)[i] 
+				& 
+				((uint8_t*)ip_netmask)[i]
+			) 
+			!= 
+			(
+				((uint8_t*)ip_addr)[i] 
+				& 
+				((uint8_t*)ip_netmask)[i]
+			)
+		)
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/**
+ *
+ */
+void ip_set_broadcast(void)
+{
+	uint8_t i;
+	if((ip_netmask[0] | ip_netmask[1] | ip_netmask[2] | ip_netmask[3]) == 0)
+		memset(&ip_broadcast,0,sizeof(ip_broadcast));
+	else
+	{
+		for(i=0;i<sizeof(ip_address);i++)
+			ip_broadcast[i] = (ip_addr[i] | ~ip_netmask[i]);
+	}
+}
 

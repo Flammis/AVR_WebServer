@@ -10,12 +10,10 @@
 
 #if NET_ICMP
 
-//
-#include "../debug.h"
 
 #include <string.h>
 
-#include <net2.h>
+#include <net.h>
 #include <ethernet.h>
 #include <ip.h>
 

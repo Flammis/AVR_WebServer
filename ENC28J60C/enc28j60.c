@@ -292,7 +292,7 @@ void Enc28j60Init(uint8_t* macaddr)
   CSPASSIVE;
   
   //Set MOSI AND SCK as output
-   ENC28J60_CONTROL_DDR |= (1 << ENC28J60_CONTROL_MOSI) | (1 << ENC28J60_CONTROL_SCK); // mosi, sck output
+  ENC28J60_CONTROL_DDR |= (1 << ENC28J60_CONTROL_MOSI) | (1 << ENC28J60_CONTROL_SCK); // mosi, sck output
   //Set MISO as input  
   ENC28J60_CONTROL_DDR &= ~(1 << ENC28J60_CONTROL_MISO);
   //Set MOSI AND SCK LOW
