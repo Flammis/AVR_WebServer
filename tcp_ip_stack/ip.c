@@ -8,6 +8,8 @@
 #include <icmp.h>
 #include <tcp.h>
 
+#include "../debug.h"
+
 
 /**
  * Internet Protocol version 4
@@ -122,6 +124,7 @@ static ip_address ip_gateway = NET_IP_GATEWAY;
  * Broadcast address
  */
 static ip_address ip_broadcast;
+
 
 /**
  * Checks if specified ip address is the broadcast address
@@ -258,6 +261,7 @@ uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const et
 	/* check destination ip address */
 	if(memcmp(&header->dst,ip_get_addr(),sizeof(ip_address)))
 	{
+    
 		/* check if this is broadcast packet */
 		if(	header->dst[0] != 0xff ||
 			header->dst[1] != 0xff ||
@@ -278,6 +282,7 @@ uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const et
 	{
 // #if NET_ICMP		
 		case IP_PROTOCOL_ICMP:
+      //DBG_STATIC("ICMP packet received:");
 			icmp_handle_packet(
 				(const ip_address*)&header->src,
 				(const struct icmp_header*)((const uint8_t*)header + header_length),
@@ -286,6 +291,7 @@ uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const et
 // #endif //NET_ICMP
 #if NET_UDP
 		case IP_PROTOCOL_UDP:
+      DBG_STATIC("UDP packet received:");
 			udp_handle_packet(
 				(const ip_address*)&header->src,
 				(const struct udp_header*)((const uint8_t*)header + header_length),
@@ -293,6 +299,7 @@ uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const et
 			break;
 #endif //NET_UDP			
 		case IP_PROTOCOL_TCP:
+      //DBG_STATIC("TCP packet received:");
 			tcp_handle_packet(
 				(const ip_address*)&header->src,
 				(const struct tcp_header*)((const uint8_t*)header + header_length),
@@ -301,7 +308,7 @@ uint8_t ip_handle_packet(struct ip_header * header, uint16_t packet_len,const et
 		default:
 			break;
 	}
-	return 0;
+	return 1;
 }
 
 

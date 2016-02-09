@@ -15,6 +15,7 @@
 #include <net.h>
 #include <tcp.h>
 #include <webb_config.h>
+
 /*TCP*/
 tcp_socket_t socket;
 
@@ -31,9 +32,10 @@ Maximum startup time.
 */
 
 static void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event);
-
+static uint8_t httpd_start(void);
 
 static const ethernet_address my_mac = MAC_ADDRESS;
+static uint8_t int28j60 = 0;
 
 int main (void)
 {
@@ -41,26 +43,37 @@ int main (void)
   Timer1Init();
   ExternIntInit();
   
-  //initialize enc28j60
-  Enc28j60Init((uint8_t*)&my_mac);
-  _delay_ms(10);
-  
   //initalize uart 
   uart_init(UART_BAUD_SELECT(BAUDRATE, F_CPU));
   _delay_ms(10);
+  sei();            // enable global interrupt
   
+  //initialize enc28j60
+  Enc28j60Init((uint8_t*)&my_mac);
+  _delay_ms(10);
+
   InitPhy();
+  _delay_ms(10);
   ethernet_init(&my_mac);
 	ip_init(0,0,0); //Already set
 	arp_init();
 	tcp_init();
   
+  _delay_ms(10);
+  if(httpd_start()){
+    DBG_STATIC("Successfully initialized HTTP socket."); 
+  } else {
+    DBG_STATIC("FAILURE to initialize HTTP socket.");     
+  }
   
-  sei();            // enable global interrupt
   while (1)
   {
-    ethernet_handle_packet();
-    _delay_ms(500);
+    if(int28j60){
+      while(handle_ethernet_packet()){
+        DBG_STATIC("Ethernet Handled!");
+      }
+    }
+    _delay_ms(1);
   }
 }
 
@@ -95,14 +108,19 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
   {
     DBG_STATIC("tcp_event_data_received");
     uint16_t len;
-    uint8_t* msg = tcp_read(socket, &len);
+    const uint8_t* msg = tcp_read(socket, &len);
     DBG_DYNAMIC(msg);
+    
+    char buffer[40];
+    sprintf(buffer, "Data length: %" PRIu16, len);
+    DBG_DYNAMIC(buffer);
+    
     if(len > 0){
-      if (strncmp("GET ",(char *)msg), 4) != 0){
-        tcp_write(socket, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
+      if (strncmp("GET ",(char *)msg, 4) != 0){
+        tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
       } else {
-        tcp_write(socket, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n"));
-        tcp_write(socket, PSTR("<center><h1>Welcome to AVR webserver<hr><button>Click me!</button>"));
+        tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"));
+        tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>Welcome to AVR webserver<hr><button>Click me!</button>"));
       }
     } else {
       DBG_STATIC("No data received");
@@ -120,11 +138,15 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
 	}
 }
 
-
 /*****Interrupt from ENC28J60**************/
 ISR(INT0_vect)
 {
-  uint8_t tmp = 1;
+  int28j60 = 1;
+  //_delay_ms(10);
+  //DBG_STATIC("Interrupt new packet!");
+  //while(handle_ethernet_packet()){
+  //  DBG_STATIC("Ethernet packet received.");
+  //}
 }
 
 

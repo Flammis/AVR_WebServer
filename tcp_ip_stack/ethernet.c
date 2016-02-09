@@ -5,6 +5,8 @@
 #include <arp.h>
 #include <string.h>
 
+#include "../debug.h"
+
 struct ethernet_header
 {
   ethernet_address 	dst;
@@ -21,8 +23,7 @@ struct ethernet_stats
 static struct ethernet_stats ethernet_stats;
 static ethernet_address ethernet_mac;
 
-uint8_t ethernet_tx_buffer[ETHERNET_MAX_PACKET_SIZE + NET_HEADER_SIZE_ETHERNET]; // EXMEM
-uint8_t ethernet_rx_buffer[ETHERNET_MAX_PACKET_SIZE + NET_HEADER_SIZE_ETHERNET]; //EXMEM
+uint8_t ethernet_buffer[ETHERNET_MAX_PACKET_SIZE + NET_HEADER_SIZE_ETHERNET];
 
 
 void ethernet_init(const ethernet_address * mac)
@@ -43,11 +44,17 @@ uint8_t handle_ethernet_packet()
 {
   uint16_t packet_size = 0;
   
-  packet_size = Enc28j60PacketReceive(sizeof(ethernet_rx_buffer), ethernet_rx_buffer);
+  packet_size = Enc28j60PacketReceive(sizeof(ethernet_buffer), ethernet_buffer);
 
-  if (packet_size == 0) return 0;
-
-  struct ethernet_header * header = (struct ethernet_header*)ethernet_rx_buffer;
+  if (packet_size == 0){
+    return 0; 
+  }
+  DBG_STATIC("Printing TCP Packet:");
+  char buffer[30];
+  sprintf(buffer, "ETH packet length: %" PRIu16, packet_size);
+  DBG_DYNAMIC(buffer);
+  
+  struct ethernet_header * header = (struct ethernet_header*)ethernet_buffer;
 
   packet_size -=sizeof(*header);
   
@@ -57,12 +64,19 @@ uint8_t handle_ethernet_packet()
   switch(header->type)
   {
     case HTON16(ETHERNET_TYPE_IP):
+      //DBG_STATIC("Recieved IP packet.");
       //IP handle packet
       ret = ip_handle_packet((struct ip_header*)data,packet_size,(const ethernet_address*)&header->src);
       break;
     case HTON16(ETHERNET_TYPE_ARP):
+      //DBG_STATIC("Recieved ARP packet.");
       //ARP handle packet
       ret = arp_handle_packet((struct arp_header*)data,packet_size);
+      if(ret){
+        DBG_STATIC("ARP packet successfully handled.");
+      } else {
+        DBG_STATIC("ARP packet FAILURE.")
+      }
       break;
     default:
       return 0;
@@ -76,7 +90,7 @@ uint8_t ethernet_send_packet(ethernet_address * dst,uint16_t type,uint16_t len)
 	if(len > ETHERNET_MAX_PACKET_SIZE -NET_HEADER_SIZE_ETHERNET){
 		return 0;
   }
-	struct ethernet_header * header = (struct ethernet_header*)ethernet_tx_buffer;
+	struct ethernet_header * header = (struct ethernet_header*)ethernet_buffer;
 	if(dst == ETHERNET_ADDR_BROADCAST){
 		memset(&header->dst,0xff,sizeof(ethernet_address));
 	} else {
@@ -85,6 +99,6 @@ uint8_t ethernet_send_packet(ethernet_address * dst,uint16_t type,uint16_t len)
   memcpy(&header->src,&ethernet_mac,sizeof(ethernet_address));
 	header->type = hton16(type);
 	ethernet_stats.tx_packets++;
-	return Enc28j60PacketSend((len + NET_HEADER_SIZE_ETHERNET), ethernet_tx_buffer);			
+	return Enc28j60PacketSend((len + NET_HEADER_SIZE_ETHERNET), ethernet_buffer);			
 }
 

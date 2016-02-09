@@ -12,7 +12,7 @@
 
   #define ETHERNET_ADDR_BROADCAST	0
   
-  extern uint8_t ethernet_tx_buffer[];
+  extern uint8_t ethernet_buffer[];
   
   void ethernet_init(const ethernet_address * mac);
   
@@ -21,7 +21,7 @@
   uint8_t handle_ethernet_packet(void);
   uint8_t ethernet_send_packet(ethernet_address * dst,uint16_t type,uint16_t len);
 
-  #define ethernet_get_buffer()	(&ethernet_tx_buffer[NET_HEADER_SIZE_ETHERNET])
+  #define ethernet_get_buffer()	(&ethernet_buffer[NET_HEADER_SIZE_ETHERNET])
   #define ethernet_get_broadcast()
   #define ethernet_get_buffer_size() (ETHERNET_MAX_PACKET_SIZE -NET_HEADER_SIZE_ETHERNET)
 

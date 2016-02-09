@@ -2,7 +2,10 @@
 #include <arp.h>
 #include <string.h>
 
+#include "../debug.h"
+
 #define ARP_TABLE_SIZE			2
+
 
 enum arp_status
 {
@@ -53,24 +56,31 @@ uint8_t arp_handle_packet(struct arp_header * header, uint16_t packet_length)
 	/* Check packet length */
 	if(packet_length < sizeof(struct arp_header))
 		return 0;
+  //DBG_STATIC("ARP PASSED PHASE 1!");
 	/* Check hardware address size */
 	if(header->hardware_addr_len != ARP_HW_ADDR_SIZE_ETHERNET)
 		return 0;
+  //DBG_STATIC("ARP PASSED PHASE 2!");
 	/* Check protocol address size */
 	if(header->protocol_addr_len != ARP_PROTO_ADDR_SIZE_IP)
 		return 0;
+  //DBG_STATIC("ARP PASSED PHASE 3!");
 	/* Check hardware address type */
 	if(header->hardware_type != HTON16(ARP_HW_ADDR_TYPE_ETHERNET))
 		return 0;
+  //DBG_STATIC("ARP PASSED PHASE 4!");
 	/* Check protocol address type */
 	if(header->protocol_type != HTON16(ARP_PROTO_ADDR_TYPE_IP))
-		return 0;		
+		return 0;
+  //DBG_STATIC("ARP PASSED PHASE 5!");
 	/* Check whether target protocol address is our's */
 	if(memcmp(header->target_protocol_addr,ip_get_addr(),sizeof(ip_address)))
 		return 0;
+  //DBG_STATIC("ARP PASSED PHASE 6!");
 	/* Parse operation code of packet */
 	if(header->operation_code != HTON16(ARP_OPERATION_REQUEST) && header->operation_code != HTON16(ARP_OPERATION_REPLY))
 		return 0;
+  //DBG_STATIC("ARP PASSED PHASE 7!");
 	arp_table_insert((const ip_address*)&header->sender_protocol_addr,(const ethernet_address*)&header->sender_hardware_addr);
 	if(header->operation_code == HTON16(ARP_OPERATION_REQUEST))
 		return arp_send_reply(header);

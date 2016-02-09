@@ -48,7 +48,7 @@ uint8_t tcp_socket_free(tcp_socket_t socket);
 
 uint8_t tcp_listen(tcp_socket_t socket,uint16_t port);
 
-uint8_t * tcp_read(tcp_socket_t socket, uint16_t* len);
+const uint8_t * tcp_read(tcp_socket_t socket, uint16_t* len);
 uint16_t tcp_write(tcp_socket_t socket, const uint8_t * data);
 uint16_t tcp_write_p(tcp_socket_t socket, const uint8_t * data_p);
 

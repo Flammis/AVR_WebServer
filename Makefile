@@ -52,7 +52,7 @@ AVRDUDE = avrdude
 ## The name of your project (without the .c)
 # TARGET = blinkLED
 ## Or name it automatically after the enclosing directory
-TARGET = $(lastword $(subst /, ,$(CURDIR)))
+TARGET = main
 
 # Object files: will find all .c/.h files in current directory
 #  and in LIBDIR.  If you have any other (sub-)directories with code,
@@ -121,8 +121,11 @@ clean:
 	rm -f $(TARGET).elf $(TARGET).hex $(TARGET).obj \
 	$(TARGET).o $(TARGET).d $(TARGET).eep $(TARGET).lst \
 	$(TARGET).lss $(TARGET).sym $(TARGET).map $(TARGET)~ \
-	$(TARGET).eeprom
-
+	$(TARGET).eeprom $(LCDDIR)/*.o $(ENC28JDIR)/*.o \
+  $(LowLvlInit)/*.o $(TCP_IP)/*.o $(UART_DIR)/*.o
+  
+  
+  
 squeaky_clean:
 	rm -f *.elf *.hex *.obj *.o *.d *.eep *.lst *.lss *.sym *.map *~ *.eeprom
 
