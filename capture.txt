@@ -1,0 +1,137 @@
+tcp_event_connection_incoming
+Trasmitting TCP:
+Reseting TCP.
+tcp_event_connection_established
+tcp_event_data_received
+GET / HTTP/1.1
+Host: 169.254.222.184
+Connection: keep-alive
+Cache-Control: max-age=0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,sv;q=0.6
+
+
+Data length: 409
+Trasmitting TCP:
+Trasmitting TCP:
+tcp_event_connection_established
+Trasmitting TCP:
+tcp_event_connection_closing
+tcp_event_connection_incoming
+Trasmitting TCP:
+tcp_event_connection_established
+tcp_event_data_received
+GET / HTTP/1.1
+Host: 169.254.222.184
+Connection: keep-alive
+Cache-Control: max-age=0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,sv;q=0.6
+
+
+Data length: 409
+Trasmitting TCP:
+Trasmitting TCP:
+tcp_event_connection_incoming
+Trasmitting TCP:
+Reseting TCP.
+Reseting TCP.
+Reseting TCP.
+tcp_event_connection_established
+tcp_event_data_received
+GET /favicon.ico HTTP/1.1
+Host: 169.254.222.184
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
+Accept: */*
+Referer: http://169.254.222.184/
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,sv;q=0.6
+
+t-Language: en-US,en;q=0.8,sv;q=0.6
+
+
+Data length: 370
+Trasmitting TCP:
+Trasmitting TCP:
+tcp_event_connection_established
+Trasmitting TCP:
+tcp_event_connection_closing
+tcp_event_connection_incoming
+Trasmitting TCP:
+tcp_event_connection_established
+tcp_event_data_received
+GET / HTTP/1.1
+Accept: text/html, application/xhtml+xml, image/jxr, */*
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586
+Accept-Encoding: gzip, deflate
+Host: 169.254.222.184
+Connection: Keep-Alive
+
+sdch
+Accept-Language: en-US,en;q=0.8,sv;q=0.6
+
+t-Language: en-US,en;q=0.8,sv;q=0.6
+
+
+Data length: 320
+Trasmitting TCP:
+Trasmitting TCP:
+tcp_event_connection_established
+Trasmitting TCP:
+tcp_event_connection_closing
+tcp_event_connection_incoming
+Trasmitting TCP:
+Reseting TCP.
+tcp_event_connection_established
+tcp_event_data_received
+GET / HTTP/1.1
+Host: 169.254.222.184
+Connection: keep-alive
+Cache-Control: max-age=0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,sv;q=0.6
+
+
+Data length: 409
+Trasmitting TCP:
+Trasmitting TCP:
+tcp_event_connection_established
+Trasmitting TCP:
+tcp_event_connection_closing
+tcp_event_connection_incoming
+Trasmitting TCP:
+tcp_event_connection_established
+tcp_event_data_received
+GET /favicon.ico HTTP/1.1
+Host: 169.254.222.184
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
+Accept: */*
+Referer: http://169.254.222.184/
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8,sv;q=0.6
+
+t-Language: en-US,en;q=0.8,sv;q=0.6
+
+
+Data length: 370
+Trasmitting TCP:
+Trasmitting TCP:
+tcp_event_connection_established
+Trasmitting TCP:
+tcp_event_connection_closing

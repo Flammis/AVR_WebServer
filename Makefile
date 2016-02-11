@@ -18,6 +18,7 @@ ENC28JDIR = ./ENC28J60C
 LowLvlInit = ./LowLevelInit
 TCP_IP = ./tcp_ip_stack
 UART_DIR = ./uart
+TIMER_DIR = ./timer
 
 ##########------------------------------------------------------##########
 ##########                 Programmer Defaults                  ##########
@@ -57,12 +58,12 @@ TARGET = main
 # Object files: will find all .c/.h files in current directory
 #  and in LIBDIR.  If you have any other (sub-)directories with code,
 #  you can add them in to SOURCES below in the wildcard statement.
-SOURCES=$(wildcard *.c $(LIBDIR)/*.c $(LCDDIR)/*.c $(ENC28JDIR)/*.c $(LowLvlInit)/*.c $(TCP_IP)/*.c $(UART_DIR)/*.c)
+SOURCES=$(wildcard *.c $(LIBDIR)/*.c $(LCDDIR)/*.c $(ENC28JDIR)/*.c $(LowLvlInit)/*.c $(TCP_IP)/*.c $(UART_DIR)/*.c $(TIMER_DIR)/*.c)
 OBJECTS=$(SOURCES:.c=.o)
 HEADERS=$(SOURCES:.c=.h)
 
 ## Compilation options, type man avr-gcc if you're curious.
-CPPFLAGS = -DF_CPU=$(F_CPU) -DBAUD=$(BAUD) -I. -I$(LIBDIR) -I$(LCDDIR) -I$(ENC28JDIR) -I$(LowLvlInit) -I$(TCP_IP) -I$(UART_DIR)
+CPPFLAGS = -DF_CPU=$(F_CPU) -DBAUD=$(BAUD) -I. -I$(LIBDIR) -I$(LCDDIR) -I$(ENC28JDIR) -I$(LowLvlInit) -I$(TCP_IP) -I$(UART_DIR) -I$(TIMER_DIR)
 CFLAGS = -Os -g -std=gnu99 -Wall
 ## Use short (8-bit) data types 
 CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums 
@@ -122,7 +123,7 @@ clean:
 	$(TARGET).o $(TARGET).d $(TARGET).eep $(TARGET).lst \
 	$(TARGET).lss $(TARGET).sym $(TARGET).map $(TARGET)~ \
 	$(TARGET).eeprom $(LCDDIR)/*.o $(ENC28JDIR)/*.o \
-  $(LowLvlInit)/*.o $(TCP_IP)/*.o $(UART_DIR)/*.o
+  $(LowLvlInit)/*.o $(TCP_IP)/*.o $(UART_DIR)/*.o $(TIMER_DIR)/*.o
   
   
   

@@ -15,6 +15,8 @@
 
 #include "../debug.h"
 
+#include <timer.h>
+
 /* TCP Flags:
 * URG:	Urgent Pointer field significant
 * ACK:	Acknowledgment field significant
@@ -126,6 +128,7 @@ struct tcp_tcb
   uint16_t RxLength;
   uint8_t TxData[TCB_TX_BUFFERSIZE];
   uint16_t TxLength;
+	timer_t timer;
 };
 
 
@@ -145,6 +148,8 @@ static uint8_t tcp_socket_valid(tcp_socket_t socket);
 static uint8_t tcp_tcb_valid(struct tcp_tcb * tcb);
 static uint8_t tcp_free_port(uint16_t port);
 static void tcp_tcb_free(struct tcp_tcb * tcb);
+static void tcp_timeout(timer_t timer,void * arg);
+
   
 static void tcp_print_packet(const struct tcp_header * tcp, uint16_t length){
   DBG_STATIC("Printing TCP Packet:");
@@ -203,12 +208,14 @@ uint8_t tcp_listen(tcp_socket_t socket,uint16_t port)
     return 0;
   tcb->port_local = port;
   tcb->state = tcp_state_listen;
+  tcb->timer = timer_alloc(tcp_timeout, TCP_TIMEOUT_MS);
+  timer_set_arg(tcb->timer,(void*)tcb);
   return 1;
 }
 
 uint8_t tcp_handle_packet(const ip_address * ip_remote,const struct tcp_header * tcp,uint16_t length)
 {
-  tcp_print_packet(tcp, length);
+  //tcp_print_packet(tcp, length);
   if(length < sizeof(struct tcp_header))
     return 0;
   if(ntoh16(tcp->checksum) != tcp_get_checksum(ip_remote,tcp,length))
@@ -247,6 +254,10 @@ uint8_t tcp_state_machine(struct tcp_tcb * tcb,const ip_address * ip_remote,cons
 	tcp_socket_t socket = tcp_get_socket_num(tcb);
 	if(socket < 0)
 		return 0;
+  
+  /*Stop timer*/
+  timer_reset(tcb->timer);
+  
   if(tcp->flags & TCP_FLAG_SYN){
     /* set remote ip address */
     memcpy(tcb->ip_remote,ip_remote,sizeof(ip_address));
@@ -260,6 +271,8 @@ uint8_t tcp_state_machine(struct tcp_tcb * tcb,const ip_address * ip_remote,cons
     tcb->ack = ntoh32(tcp->seq) + 1;
     /* send SYN, ACK segment */
     tcp_send_packet(tcb,TCP_FLAG_SYN|TCP_FLAG_ACK,0);
+    
+    tcb->state = tcp_state_syn_received;
     return 1;
   }
   
@@ -284,11 +297,14 @@ uint8_t tcp_state_machine(struct tcp_tcb * tcb,const ip_address * ip_remote,cons
       tcb->ack = ntoh32(tcp->seq) + 1;
       tcp_send_packet(tcb,TCP_FLAG_FIN|TCP_FLAG_ACK,0);
       tcb->callback(socket,tcp_event_connection_closing);
+      tcb->state = tcp_state_listen;
+      timer_stop(tcb->timer);
     } else {
-      tcb->callback(socket,tcp_event_connection_established); 
+      tcb->callback(socket,tcp_event_connection_established);
+      tcb->state = tcp_state_established;
     }
   } else {
-    tcb->ack += data_length;
+    tcb->ack = ntoh32(tcp->seq) + data_length;
     if(data_length> TCB_RX_BUFFERSIZE){
       data_length = TCB_RX_BUFFERSIZE;
     }
@@ -298,12 +314,29 @@ uint8_t tcp_state_machine(struct tcp_tcb * tcb,const ip_address * ip_remote,cons
     //Send ack
     tcp_send_packet(tcb,TCP_FLAG_ACK,0);
     if(tcb->TxLength > 0){
-      //tcp_send_packet(tcb, TCP_FLAG_ACK, 1);
       //Send ACK and the reply data and FIN
       tcp_send_packet(tcb, TCP_FLAG_ACK|TCP_FLAG_FIN|TCP_FLAG_PSH, 1);
     }
+    tcb->state = tcp_state_listen;
+    timer_stop(tcb->timer);
   }
   return 1;
+
+}
+
+void tcp_timeout(timer_t timer,void * arg)
+{
+	DBG_STATIC("tcp_timeout!");
+  
+	if(!arg)
+		return;
+	struct tcp_tcb * tcb = (struct tcp_tcb*)arg;
+	tcp_socket_t socket = tcp_get_socket_num(tcb);
+	if(socket < 0)
+		return;
+	if(timer != tcb->timer)
+		return;
+  tcb->state = tcp_state_listen;
 }
 
 
@@ -355,7 +388,7 @@ uint8_t tcp_send_packet(struct tcp_tcb * tcb,uint8_t flags,uint8_t send_data)
   tcp->checksum = hton16(tcp_get_checksum((const ip_address*)&tcb->ip_remote,tcp,packet_total_len));
   
   DBG_STATIC("Trasmitting TCP:");
-  tcp_print_packet(tcp, packet_total_len);
+  //tcp_print_packet(tcp, packet_total_len);
   
   packet_sent = ip_send_packet((const ip_address*)&tcb->ip_remote,IP_PROTOCOL_TCP,packet_total_len);
 	return packet_sent;
@@ -432,6 +465,7 @@ void tcp_tcb_free(struct tcp_tcb * tcb)
 	if(!tcp_tcb_valid(tcb))
 		return;
 	tcb->state = tcp_state_unused;
+  timer_free(tcb->timer);
 	memset(tcb,0,sizeof(struct tcp_tcb));
 }
 

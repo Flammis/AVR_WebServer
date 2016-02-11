@@ -33,11 +33,10 @@ extern void Timer1Init (void)
   TCNT1 = 0;                       // count from 0
   OCR1A = 19999;                   // divide 16 MHz with 8 * 20000 to 100 Hz
   /*
-  TIMSK.OCIE1A=1
-  Timer1 Output Compare A Match Interrupt Enable
-  //TIMSK = TIMSK | 0x10;            // enable intr on OCR1A
+    TIMSK1.OCIE1A=1
+    Timer1 Output Compare A Match Interrupt Enable
   */
-  //TIMSK1 = TIMSK1 | 0x02;
+  TIMSK1 = TIMSK1 | 0x02;
 
   /*
   Bit:     |  Bit7|   Bit6|  Bit5|   Bit4|   Bit3|  Bit2|  Bit1| Bit0|

@@ -11,7 +11,6 @@
 #define NET_IP_ADDRESS	{169,254,222,184}
 #define NET_IP_NETMASK	{255,255,255,0}
 #define NET_IP_GATEWAY	{169,254,222,1}
-
 #define WEBB_PORT 80
 
 #endif

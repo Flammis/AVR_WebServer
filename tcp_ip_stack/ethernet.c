@@ -49,10 +49,9 @@ uint8_t handle_ethernet_packet()
   if (packet_size == 0){
     return 0; 
   }
-  DBG_STATIC("Printing TCP Packet:");
-  char buffer[30];
-  sprintf(buffer, "ETH packet length: %" PRIu16, packet_size);
-  DBG_DYNAMIC(buffer);
+  // char buffer[30];
+  // sprintf(buffer, "ETH packet length: %" PRIu16, packet_size);
+  // DBG_DYNAMIC(buffer);
   
   struct ethernet_header * header = (struct ethernet_header*)ethernet_buffer;
 
@@ -72,11 +71,11 @@ uint8_t handle_ethernet_packet()
       //DBG_STATIC("Recieved ARP packet.");
       //ARP handle packet
       ret = arp_handle_packet((struct arp_header*)data,packet_size);
-      if(ret){
-        DBG_STATIC("ARP packet successfully handled.");
-      } else {
-        DBG_STATIC("ARP packet FAILURE.")
-      }
+      // if(ret){
+        // DBG_STATIC("ARP packet successfully handled.");
+      // } else {
+        // DBG_STATIC("ARP packet FAILURE.")
+      // }
       break;
     default:
       return 0;

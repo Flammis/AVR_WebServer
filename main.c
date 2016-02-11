@@ -16,6 +16,9 @@
 #include <tcp.h>
 #include <webb_config.h>
 
+/*Timer*/
+#include <timer.h>
+
 /*TCP*/
 tcp_socket_t socket;
 
@@ -42,7 +45,7 @@ int main (void)
   InitIo();
   Timer1Init();
   ExternIntInit();
-  
+  timer_init();
   //initalize uart 
   uart_init(UART_BAUD_SELECT(BAUDRATE, F_CPU));
   _delay_ms(10);
@@ -69,11 +72,9 @@ int main (void)
   while (1)
   {
     if(int28j60){
-      while(handle_ethernet_packet()){
-        DBG_STATIC("Ethernet Handled!");
-      }
+      while(handle_ethernet_packet());
     }
-    _delay_ms(1);
+    //_delay_us(1);
   }
 }
 
@@ -120,7 +121,7 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
       } else {
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"));
-        tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>Welcome to AVR webserver<hr><button>Click me!</button>"));
+        tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1><hr><table><thead><tr colspan=\"2\"><th>Server status</th></tr></thead><tbody><tr><td>Temp</td></tr></tbody></table></center>"));
       }
     } else {
       DBG_STATIC("No data received");
@@ -142,11 +143,19 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
 ISR(INT0_vect)
 {
   int28j60 = 1;
-  //_delay_ms(10);
-  //DBG_STATIC("Interrupt new packet!");
-  //while(handle_ethernet_packet()){
-  //  DBG_STATIC("Ethernet packet received.");
-  //}
+}
+
+static uint8_t counter;
+
+/*100 Hz clock*/
+ISR (TIMER1_COMPA_vect)
+{
+  counter++; // incr the counter every 10 ms
+  if (counter == 100)
+  {
+    counter = 0;
+    timer_tick();
+  }
 }
 
 
