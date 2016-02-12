@@ -124,9 +124,9 @@ struct tcp_tcb
 	uint16_t window;
 	uint16_t mss;
 	int8_t rtx;
-  uint8_t RxData[TCB_RX_BUFFERSIZE];
+  uint8_t* RxData;
   uint16_t RxLength;
-  uint8_t TxData[TCB_TX_BUFFERSIZE];
+  uint8_t* TxData;
   uint16_t TxLength;
 	timer_t timer;
 };
@@ -304,10 +304,11 @@ uint8_t tcp_state_machine(struct tcp_tcb * tcb,const ip_address * ip_remote,cons
     }
   } else {
     tcb->ack = ntoh32(tcp->seq) + data_length;
-    if(data_length> TCB_RX_BUFFERSIZE){
-      data_length = TCB_RX_BUFFERSIZE;
-    }
-    memcpy(tcb->RxData, (const uint8_t*)tcp + data_offset,data_length);
+    // if(data_length> TCB_RX_BUFFERSIZE){
+      // data_length = TCB_RX_BUFFERSIZE;
+    // }
+    tcb->RxData = (const uint8_t*)tcp + data_offset;
+    // memcpy(tcb->RxData, (const uint8_t*)tcp + data_offset,data_length);
     tcb->RxLength = data_length;
     tcb->callback(socket,tcp_event_data_received);
     //Send ack
@@ -431,30 +432,30 @@ uint8_t tcp_send_rst(const ip_address * ip_remote,const struct tcp_header * tcp_
 
 tcp_socket_t tcp_get_socket_num(struct tcp_tcb * tcb)
 {
-		tcp_socket_t socket_num = (tcp_socket_t)(((uint16_t)tcb - (uint16_t)tcp_tcbs)/sizeof(struct tcp_tcb));
-		if(tcp_socket_valid(socket_num))
-			return socket_num;
-		return -1;
+  tcp_socket_t socket_num = (tcp_socket_t)(((uint16_t)tcb - (uint16_t)tcp_tcbs)/sizeof(struct tcp_tcb));
+  if(tcp_socket_valid(socket_num))
+    return socket_num;
+  return -1;
 }
 
 uint8_t tcp_free_port(uint16_t port)
 {
-		struct tcp_tcb * tcb;
-		FOREACH_TCB(tcb)
-		{
-			if(tcb->state != tcp_state_unused && tcb->port_local == port)
-				return 0;
-		}	
-		return 1;
+  struct tcp_tcb * tcb;
+  FOREACH_TCB(tcb)
+  {
+    if(tcb->state != tcp_state_unused && tcb->port_local == port)
+      return 0;
+  }	
+  return 1;
 }
 
 uint8_t tcp_socket_free(tcp_socket_t socket)
 {
-		if(!tcp_socket_valid(socket))
-			return 0;
-		struct tcp_tcb * tcb = &tcp_tcbs[socket];
-		tcp_tcb_free(tcb);
-		return 1;
+  if(!tcp_socket_valid(socket))
+    return 0;
+  struct tcp_tcb * tcb = &tcp_tcbs[socket];
+  tcp_tcb_free(tcb);
+  return 1;
 }
 
 void tcp_tcb_free(struct tcp_tcb * tcb)
@@ -526,11 +527,18 @@ uint16_t tcp_write(tcp_socket_t socket, const uint8_t * data)
 		return -1;
 	struct tcp_tcb * tcb = &tcp_tcbs[socket];
   
+  struct tcp_header * tcp = (struct tcp_header*)ip_get_buffer();
+  uint16_t max_packet_size = tcp_get_buffer_size();
+  uint8_t * data_ptr = (uint8_t*)tcp + sizeof(struct tcp_header);
+  data_ptr += sizeof(uint32_t);
+  max_packet_size -= sizeof(uint32_t);
+  
+  tcb->TxData = data_ptr;
+  
   uint8_t c;
-
   while ((c = *data)) 
   {
-    if(tcb->TxLength < TCB_TX_BUFFERSIZE){
+    if(tcb->TxLength < max_packet_size){
       tcb->TxData[tcb->TxLength++] = c;
       data++;
     } else {
@@ -547,10 +555,18 @@ uint16_t tcp_write_p(tcp_socket_t socket, const uint8_t * data_p)
 		return -1;
 	struct tcp_tcb * tcb = &tcp_tcbs[socket];
   
+  struct tcp_header * tcp = (struct tcp_header*)ip_get_buffer();
+  uint16_t max_packet_size = tcp_get_buffer_size();
+  uint8_t * data_ptr = (uint8_t*)tcp + sizeof(struct tcp_header);
+  data_ptr += sizeof(uint32_t);
+  max_packet_size -= sizeof(uint32_t);
+  
+  tcb->TxData = data_ptr;
+  
   uint8_t c;
   while ((c = pgm_read_byte(data_p++))) 
   {
-    if(tcb->TxLength < TCB_TX_BUFFERSIZE){
+    if(tcb->TxLength < max_packet_size){
       tcb->TxData[tcb->TxLength++] = c;
     } else {
       DBG_STATIC("Reply too big.");
@@ -558,6 +574,7 @@ uint16_t tcp_write_p(tcp_socket_t socket, const uint8_t * data_p)
     }
   }
 	return tcb->TxLength;
+  
 }
 
 

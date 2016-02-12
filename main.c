@@ -26,6 +26,8 @@ tcp_socket_t socket;
 /*DEBUG*/
 #include "debug.h"
 
+/*Web page"*/
+#include "webpage.h"
 /*
 External Clock:
 Full Swing Crystal Oscillator 16 Mhz
@@ -121,8 +123,11 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
       } else {
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"));
-        //tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1><hr><table><thead><tr colspan=\"2\"><th>Server status</th></tr></thead><tbody><tr><td>Temp</td></tr></tbody></table></center>"));
-        tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1></center>"));
+        // tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1><hr>"));
+        // tcp_write_p(socket, (const uint8_t *)PSTR("<table><thead><tr colspan=\"2\"><th>Server status</th></tr></thead>"));
+        // tcp_write_p(socket, (const uint8_t *)PSTR("<tbody><tr><td>Temp</td><td>25 Celsius</td></tr></tbody></table></center>"));        
+        tcp_write_p(socket, (const uint8_t *)WEB_PAGE);
+        //tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1></center>"));
       }
     } else {
       DBG_STATIC("No data received");
@@ -156,5 +161,7 @@ ISR (TIMER1_COMPA_vect)
 {
   timer_tick();
 }
+
+
 
 
