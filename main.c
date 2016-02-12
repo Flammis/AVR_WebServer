@@ -121,7 +121,8 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
       } else {
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"));
-        tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1><hr><table><thead><tr colspan=\"2\"><th>Server status</th></tr></thead><tbody><tr><td>Temp</td></tr></tbody></table></center>"));
+        //tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1><hr><table><thead><tr colspan=\"2\"><th>Server status</th></tr></thead><tbody><tr><td>Temp</td></tr></tbody></table></center>"));
+        tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1></center>"));
       }
     } else {
       DBG_STATIC("No data received");
@@ -147,15 +148,13 @@ ISR(INT0_vect)
 
 static uint8_t counter;
 
-/*100 Hz clock*/
+/*
+100 Hz clock.
+10 ms per tick.
+*/
 ISR (TIMER1_COMPA_vect)
 {
-  counter++; // incr the counter every 10 ms
-  if (counter == 100)
-  {
-    counter = 0;
-    timer_tick();
-  }
+  timer_tick();
 }
 
 

@@ -17,8 +17,8 @@
 struct timer_core
 {
   timer_callback_t callback;
-  uint16_t ms_left;
-  uint16_t ms_timeout;
+  int16_t ms_left;
+  int16_t ms_timeout;
   uint8_t state;
   void * arg;
 };
@@ -49,7 +49,6 @@ void timer_tick()
     /* Skip not running timers */
     if(timer->state != TIMER_STATE_RUNNING)
       continue;
-
     timer->ms_left -= TIMER_MS_PER_TICK;
     if(timer->ms_left < 0)
     {
@@ -69,10 +68,17 @@ uint8_t timer_set_arg(timer_t timer,void * arg)
 
 static uint8_t timer_valid(const timer_t timer)
 {
-  return (timer >= 0 && timer < TIMER_MAX && timer_cores[timer].callback!= 0);
+  if(timer >= 0 && timer < TIMER_MAX && timer_cores[timer].callback!= 0){
+    return 1;
+  } else {
+    char buffer[30];
+    sprintf(buffer, "Timer: %"PRIu8" invalid! ", timer);
+    DBG_DYNAMIC(buffer);
+    return 0;
+  }
 }
 
-uint8_t timer_set(timer_t timer, uint16_t ms)
+uint8_t timer_set(timer_t timer, int16_t ms)
 {
   if(!timer_valid(timer) || ms < 0)
     return 0;
@@ -99,7 +105,7 @@ uint8_t timer_reset(timer_t timer)
   return 1;  
 }
 
-timer_t timer_alloc(timer_callback_t callback, uint16_t ms_timeout)
+timer_t timer_alloc(timer_callback_t callback, int16_t ms_timeout)
 {
   struct timer_core * timer;
   if(callback == 0)

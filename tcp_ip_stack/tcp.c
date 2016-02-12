@@ -133,7 +133,7 @@ struct tcp_tcb
 
 
 
-static struct tcp_tcb tcp_tcbs[TCP_MAX_SOCKETS]; // EXMEM
+static struct tcp_tcb tcp_tcbs[TCP_MAX_SOCKETS];
 
 #define FOREACH_TCB(tcb) for(tcb = &tcp_tcbs[0] ; tcb < &tcp_tcbs[TCP_MAX_SOCKETS] ; tcb++)
 
@@ -169,8 +169,7 @@ static void tcp_print_packet(const struct tcp_header * tcp, uint16_t length){
   uint16_t data_length = length - data_offset;
   memset(buffer,0,80);
   sprintf(buffer, "  Packet length: %" PRIu16, data_length);
-  DBG_DYNAMIC(buffer);
-  
+  DBG_DYNAMIC(buffer); 
 }  
   
 uint8_t tcp_init(void)
@@ -223,7 +222,7 @@ uint8_t tcp_handle_packet(const ip_address * ip_remote,const struct tcp_header *
   struct tcp_tcb * tcb;
   struct tcp_tcb * tcb_selected = 0;
   FOREACH_TCB(tcb)
-  {
+  { 
     if(tcb->state == tcp_state_unused)
       continue;
     if(tcb->port_local != ntoh16(tcp->port_destination))
@@ -255,7 +254,7 @@ uint8_t tcp_state_machine(struct tcp_tcb * tcb,const ip_address * ip_remote,cons
 	if(socket < 0)
 		return 0;
   
-  /*Stop timer*/
+  /*Reset timer*/
   timer_reset(tcb->timer);
   
   if(tcp->flags & TCP_FLAG_SYN){
@@ -421,10 +420,8 @@ uint8_t tcp_send_rst(const ip_address * ip_remote,const struct tcp_header * tcp_
 		/*..otherwise 
 		the reset has sequence number zero and the ACK field is set to the sum
 		of the sequence number and segment length of the incoming segment*/
-						/* (tcp_rcv->offset>>4)*4 */
 		uint32_t ack = ntoh32(tcp_rcv->seq) + length - ((tcp_rcv->offset>>4)<<2);
-//		 if(tcp_rcv->flags & TCP_FLAG_SYN)
-//			 ack++;
+
 		tcp_rst->flags = TCP_FLAG_RST | TCP_FLAG_ACK;
 		tcp_rst->ack = hton32(ack);
 	}
