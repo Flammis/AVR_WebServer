@@ -243,42 +243,42 @@ STRCH (LED Pulse Stretching Enable bit)
 void InitPhy (void)
 {
   //Turn LEDA, LEDB on
-	Enc28j60PhyWrite(PHLCON,0x880);
-	_delay_ms(500);
+	// Enc28j60PhyWrite(PHLCON,0x880);
+	// _delay_ms(2000);
 	
-  //Turn LEDA, LEDB off
-	Enc28j60PhyWrite(PHLCON,0x990);
-	_delay_ms(500);
+  // //Turn LEDA, LEDB off
+	// Enc28j60PhyWrite(PHLCON,0x990);
+	// _delay_ms(500);
 	
-  //Turn LEDA, LEDB on
-	Enc28j60PhyWrite(PHLCON,0x880);
-	_delay_ms(500);
+  // //Turn LEDA, LEDB on
+	// Enc28j60PhyWrite(PHLCON,0x880);
+	// _delay_ms(500);
 	
-  //Turn LEDA, LEDB off
-	Enc28j60PhyWrite(PHLCON,0x990);
-	_delay_ms(500);
+  // //Turn LEDA, LEDB off
+	// Enc28j60PhyWrite(PHLCON,0x990);
+	// _delay_ms(500);
   
-  //Turn LEDA on
-	Enc28j60PhyWrite(PHLCON,0x890);
-	_delay_ms(500);
+  // //Turn LEDA on
+	// Enc28j60PhyWrite(PHLCON,0x890);
+	// _delay_ms(500);
 
-  //Turn LEDA, LEDB on
-	Enc28j60PhyWrite(PHLCON,0x880);
-	_delay_ms(500);
+  // //Turn LEDA, LEDB on
+	// Enc28j60PhyWrite(PHLCON,0x880);
+	// _delay_ms(500);
 
-  //Turn LEDB on
-	Enc28j60PhyWrite(PHLCON,0x980);
-	_delay_ms(500);
+  // //Turn LEDB on
+	// Enc28j60PhyWrite(PHLCON,0x980);
+	// _delay_ms(500);
 	
   //Turn LEDA, LEDB off
-	Enc28j60PhyWrite(PHLCON,0x990);
-	_delay_ms(500);
+	// Enc28j60PhyWrite(PHLCON,0x990);
+	// _delay_ms(500);
   
   //LEDA=links status
   //LEDB=transmit/receive activity
   //Stretch 73 ms
   Enc28j60PhyWrite(PHLCON,0x476);
-  _delay_ms(100);
+  // _delay_ms(100);
 }
 
 /*******************************************************************

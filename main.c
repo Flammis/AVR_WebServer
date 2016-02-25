@@ -3,6 +3,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 #include <string.h>
 #include <stdio.h>
 #include <lowlevelinit.h>
@@ -18,6 +19,12 @@
 
 /*Timer*/
 #include <timer.h>
+
+/*
+ Temperature read.
+*/
+#include <adc.h>
+#include <temperature.h>
 
 /*TCP*/
 tcp_socket_t socket;
@@ -36,33 +43,75 @@ Maximum startup time.
 |SUT1|SUT0|: 11
 */
 
+static void watchdog_init(void);
 static void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event);
 static uint8_t httpd_start(void);
 
 static const ethernet_address my_mac = MAC_ADDRESS;
 static uint8_t int28j60 = 0;
 
+/*
+  Initalize watchdog 2 seconds reset.
+*/
+void watchdog_init(void)
+{
+  wdt_enable(WDTO_2S);
+}
+
+
+
+/*****Interrupt from ENC28J60**************/
+ISR(INT0_vect)
+{
+  int28j60 = 1;
+}
+
+/*****Interrupt from Timer1 Compare**************/
+
+/*
+100 Hz clock.
+10 ms per tick.
+*/
+ISR (TIMER1_COMPA_vect)
+{
+  timer_tick();
+}
+
 int main (void)
 {
+  watchdog_init();
   InitIo();
   Timer1Init();
   ExternIntInit();
+  adc_init();
+  
+  //inialize software timer (timer.c)
   timer_init();
+
   //initalize uart 
   uart_init(UART_BAUD_SELECT(BAUDRATE, F_CPU));
   _delay_ms(10);
-  sei();            // enable global interrupt
+
+
+  wdt_reset();
+
+  sei(); // enable global interrupt
   
   //initialize enc28j60
   Enc28j60Init((uint8_t*)&my_mac);
-  _delay_ms(10);
-
+  
+  wdt_disable();
+  _delay_ms(2000);
+  wdt_enable(WDTO_2S);
+  
   InitPhy();
   _delay_ms(10);
   ethernet_init(&my_mac);
 	ip_init(0,0,0); //Already set
 	arp_init();
 	tcp_init();
+  
+  wdt_reset();
   
   _delay_ms(10);
   if(httpd_start()){
@@ -71,12 +120,15 @@ int main (void)
     DBG_STATIC("FAILURE to initialize HTTP socket.");     
   }
   
+  /*Temperature initialzie*/
+  temperature_init();
+  
   while (1)
   {
+    wdt_reset();
     if(int28j60){
       while(handle_ethernet_packet());
     }
-    //_delay_us(1);
   }
 }
 
@@ -122,12 +174,8 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
       if (strncmp("GET ",(char *)msg, 4) != 0){
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
       } else {
-        tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"));
-        // tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1><hr>"));
-        // tcp_write_p(socket, (const uint8_t *)PSTR("<table><thead><tr colspan=\"2\"><th>Server status</th></tr></thead>"));
-        // tcp_write_p(socket, (const uint8_t *)PSTR("<tbody><tr><td>Temp</td><td>25 Celsius</td></tr></tbody></table></center>"));        
+        tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"));     
         tcp_write_p(socket, (const uint8_t *)WEB_PAGE);
-        //tcp_write_p(socket, (const uint8_t *)PSTR("<center><h1>AVR Webserver</h1></center>"));
       }
     } else {
       DBG_STATIC("No data received");
@@ -143,23 +191,6 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
 	default:
 	break;
 	}
-}
-
-/*****Interrupt from ENC28J60**************/
-ISR(INT0_vect)
-{
-  int28j60 = 1;
-}
-
-static uint8_t counter;
-
-/*
-100 Hz clock.
-10 ms per tick.
-*/
-ISR (TIMER1_COMPA_vect)
-{
-  timer_tick();
 }
 
 
