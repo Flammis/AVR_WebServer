@@ -79,7 +79,7 @@ ISR (TIMER1_COMPA_vect)
 
 int main (void)
 {
-  watchdog_init();
+  //watchdog_init();
   InitIo();
   Timer1Init();
   ExternIntInit();
@@ -93,16 +93,16 @@ int main (void)
   _delay_ms(10);
 
 
-  wdt_reset();
+  //wdt_reset();
 
   sei(); // enable global interrupt
   
   //initialize enc28j60
   Enc28j60Init((uint8_t*)&my_mac);
   
-  wdt_disable();
+  //wdt_disable();
   _delay_ms(2000);
-  wdt_enable(WDTO_2S);
+  // wdt_enable(WDTO_2S);
   
   InitPhy();
   _delay_ms(10);
@@ -111,7 +111,7 @@ int main (void)
 	arp_init();
 	tcp_init();
   
-  wdt_reset();
+  //wdt_reset();
   
   _delay_ms(10);
   if(httpd_start()){
@@ -121,11 +121,11 @@ int main (void)
   }
   
   /*Temperature initialzie*/
-  temperature_init();
+  temperature_initialize();
   
   while (1)
   {
-    wdt_reset();
+    // wdt_reset();
     if(int28j60){
       while(handle_ethernet_packet());
     }
@@ -175,7 +175,13 @@ void httpd_socket_callback(tcp_socket_t socket,enum tcp_event event)
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
       } else {
         tcp_write_p(socket, (const uint8_t *)PSTR("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"));     
-        tcp_write_p(socket, (const uint8_t *)WEB_PAGE);
+        tcp_write_p(socket, (const uint8_t *)WEB_PAGE_1);
+        const struct temperature_t* temperature = get_temperature();
+        char tempbuff[10];
+        sprintf(tempbuff, "%" PRId16 ".%" PRIu8, temperature->temp_integer, temperature->temp_decimal);
+        tcp_write(socket, (const uint8_t *)tempbuff);
+        tcp_write_p(socket, (const uint8_t *)WEB_PAGE_2);
+        // tcp_write_p(socket, (const uint8_t *)WEB_PAGE_2);
       }
     } else {
       DBG_STATIC("No data received");
