@@ -50,9 +50,12 @@ extern void Timer1Init (void)
 
 
 //*****************************************************************************
+/**
+Sets all pins as outputs and to high except for INT0 and INT1 pins. 
+INT0 and INT1 pins are instead set to input and pull up.
+*/
 extern void InitIo (void)
 {
-  // all output high
   DDRB = 0xFF;
   DDRC = 0xFF;
   DDRD = 0xFB; //Int0, Int1
