@@ -69,6 +69,24 @@ PSTR(" \
 </tbody>\
 </table>\
 </div>\
+<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js\"> </script>\
+<script>\
+$(document).ready(function() {\
+setInterval(function(){\
+  $.ajax({\
+  cache: false,\
+  type: \"POST\",\
+  url: \"http://169.254.222.184/TEMP\",\
+  contentType: 'application/json',\
+  dataType: \"json\",\
+  data: JSON.stringify(null),\
+  success: function (result) {\
+    $('table tr:first-child td:last-child').html(result + ' &#8451;');\
+  }\
+});\
+},2500);\
+});\
+</script>\
 " \
 ) \
 }
